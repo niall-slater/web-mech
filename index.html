@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>web-mech</title>
+        <link rel="stylesheet" href="css/styles.css">
+        <meta name="description" content="Asteroid tracking and the like." />
+        <meta name="keywords" content="mech">
+        <meta name="author" content="Niall Slater">
+        <meta property="og:image" content="img/og.jpg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        <meta HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+		
+		<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+
+    </head>
+    
+    <body>
+        
+		<div class="label">
+        	<h1>CONTROL PANEL</h1>
+		</div>
+
+		<div class="panel">
+			<h1>MOVEMENT</h1>
+			<table class='pad'>
+				<tr>
+					<td></td>
+					<td><button onclick="move('n')">N</button></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td><button onclick="move('w')">W</button></td>
+					<td></td>
+					<td><button onclick="move('e')">E</button></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><button onclick="move('s')">S</button></td>
+					<td></td>
+				</tr>
+			</table>
+		</div>
+		<div class="panel">
+			<h1>POWER</h1>
+			<div class="slider">50</div><button>BOOST ENGINE</button>
+			<div class="slider">25</div><button>BOOST COOLING</button>
+			<div class="slider">75</div><button>BOOST SCANNERS</button>
+		</div>
+		<div class="panel">
+			<h1>HEAT</h1>
+			<div class="slider">50</div><button>ADD COOLANT</button>
+			<div class="slider">25</div><button>ADD COOLANT</button>
+			<div class="slider">75</div><button>ADD COOLANT</button>
+		</div>
+		<div class="panel">
+			<h1>TARGETS</h1>
+			<div class="target">50</div><button>AIM</button>
+			<div class="target">25</div><button>AIM</button>
+			<div class="target">75</div><button>AIM</button>
+		</div>
+        
+		<div class="panel">
+			<h1>MAP</h1>
+			<table class="map" id="map">
+				<tr>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+					<td>0</td>
+				</tr>
+			</table>
+		</div>
+		
+        <!--
+			SCRIPTS
+		-->
+        
+        <script src="js/index.js?1001"></script>
+    </body>
+</html>

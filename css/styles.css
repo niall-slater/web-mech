@@ -1,0 +1,68 @@
+body {
+	font-family: monospace;
+	background-color: #333;
+	color: #3f3;
+	display: flex;
+	flex-flow: row wrap;
+	
+	text-align: center;
+}
+
+.panel {
+	border: 1px dotted #444;
+	margin: auto;
+	padding: 1em;
+	width: 15%;
+	
+	display: flex;
+	flex-flow: column wrap;
+	box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.26);
+}
+
+.label {
+	border: 1px solid #555;
+	margin: auto;
+	padding: 1em;
+	height: 20%;
+	box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.26);
+}
+
+button {
+	background-color: #333;
+	border-color: #999;
+	margin: auto;
+	color: #3f3;
+	width: 50%;
+}
+
+.pad {
+	width: 80%;
+	margin: auto;
+}
+
+.pad td {
+	height: 38px;
+	width: 28px;
+}
+
+.pad button {
+	font-size: 1.2em;
+	text-align: center;
+	height: 100%;
+	width: 100%;
+}
+
+.map {
+	background-color: #000;
+	border-radius: 2px;
+	border: 2px dotted #556;
+	border-collapse: collapse;
+	padding: 6em;
+}
+
+.map td {
+	font-size: 1.6em;
+	color: #00d8ff;
+	text-shadow: 0px 0px 20px rgba(0, 216, 255, 0.69);
+	border: 2px dotted #333;
+}
