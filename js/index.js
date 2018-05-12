@@ -7,7 +7,6 @@ var mech = {
 		power: 100
 	},
 	
-	//Mech is positioned on a 5x5 grid
 	position : {
 		x: 2,
 		y: 2
@@ -15,14 +14,29 @@ var mech = {
 	
 }
 
+var enemy = {
+	
+	//Values to keep track of health, dangers and resources
+	status : {
+		hull: 100
+	},
+	
+	position : {
+		x: 5,
+		y: 5
+	}
+	
+}
+
 //Map is a 10x10 table element
 //Declare keys for items
 var mapSize = 10;
-var mapID_field = ".";
-var mapID_woods = ",";
+var mapID_field = "-";
+var mapID_woods = ";";
 var mapID_mountains = "^";
 var mapID_water = "~";
 var mapID_mech = "M";
+var mapID_enemy = "X";
 var mapElement = document.getElementById("map");
 
 
@@ -67,6 +81,11 @@ function buildMap() {
 			result[riverY][x] = mapID_water;
 		}
 	}
+	
+	//Add enemy
+	
+	enemy.position.x = mapSize - mech.position.x;
+	enemy.position.y = mapSize - mech.position.y;
 	
 	return result;
 	
@@ -121,6 +140,10 @@ function updateMap() {
 			if (mech.position.x == j && mech.position.y == i) {
 				cells[j].textContent = mapID_mech;
 			}
+			if (enemy.position.x == j && enemy.position.y == i) {
+				cells[j].textContent = mapID_enemy;
+			}
+			
 		}
 	}
 }
@@ -134,6 +157,14 @@ function move(direction) {
 		case 'w': if (mech.position.x > 0) {mech.position.x--;} break;
 		default: console.log("Tried to move invalid direction");
 	}
+	
+	switch (direction) {
+		case 's': if (enemy.position.y > 0) {enemy.position.y--;} break;
+		case 'w': if (enemy.position.x < mapSize-1) {enemy.position.x++;} break;
+		case 'n': if (enemy.position.y < mapSize-1) {enemy.position.y++;} break;
+		case 'e': if (enemy.position.x > 0) {enemy.position.x--;} break;
+	}
+	
 	updateMap();
 }
 
