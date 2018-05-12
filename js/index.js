@@ -18,9 +18,14 @@ var mech = {
 //Map is a 5x5 table element
 //Declare keys for items
 var mapSize = 5;
-var mapID_grass = "0";
-var mapID_mech = "X";
+var mapID_field = ".";
+var mapID_woods = "f";
+var mapID_hill = "^";
+var mapID_mech = "M";
 var mapElement = document.getElementById("map");
+
+
+/* MAP GENERATION CODE */
 
 function buildMap() {
 	
@@ -32,7 +37,15 @@ function buildMap() {
 		
 		for (var x = 0; x < mapSize; x++) {
 			
-			row.push(mapID_grass);
+			var tile = mapID_field;
+			
+			if (Math.random() > .8) {
+				
+				tile = mapID_woods;
+				
+			}
+			
+			row.push(tile);
 			
 		}
 		
@@ -54,23 +67,25 @@ function updateMap() {
 	var rows = mapElement.rows;
 	var cells;
 	
-	map[mech.position.y][mech.position.x] = mapID_mech;
-	
 	//Iterate over rows
 	for (var i = 0; i < rows.length; i++) {
 		cells = rows[i].cells;
 		
 		//Iterate over cells
 		for (var j = 0; j < cells.length; j++) {
+			
+			//For each cell, set the text content to be the map tile
 			cells[j].textContent = map[i][j];
+			
+			//If there's an object on the cell, set the content to display that object
+			if (mech.position.x == j && mech.position.y == i) {
+				cells[j].textContent = mapID_mech;
+			}
 		}
 	}
 }
 
 function move(direction) {
-	
-	//Wipe the mech's current position
-	map[mech.position.y][mech.position.x] = mapID_grass;
 	
 	switch (direction) {
 		case 'n': if (mech.position.y > 0) {mech.position.y--;} break;
