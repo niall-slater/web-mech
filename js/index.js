@@ -139,9 +139,23 @@ function updateMap() {
 			//If there's an object on the cell, set the content to display that object
 			if (mech.position.x == j && mech.position.y == i) {
 				cells[j].textContent = mapID_mech;
+				cells[j].style.color = '#0f0';
 			}
-			if (enemy.position.x == j && enemy.position.y == i) {
+			else if (enemy.position.x == j && enemy.position.y == i) {
 				cells[j].textContent = mapID_enemy;
+				cells[j].style.color = '#f00';
+			} else {
+				cells[j].style.color = '';
+			}
+			
+			
+			
+			//Add color
+			switch (cells[j].textContent) {
+				case mapID_field: cells[j].style.color = '#0a0'; break;
+				case mapID_woods: cells[j].style.color = '#005200'; break;
+				case mapID_mountains: cells[j].style.color = '#959595'; break;
+				case mapID_water:  cells[j].style.color = '#003baa'; break;
 			}
 			
 		}

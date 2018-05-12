@@ -66,3 +66,11 @@ button {
 	text-shadow: 0px 0px 20px rgba(0, 216, 255, 0.69);
 	border: 2px dotted #112;
 }
+
+.green {
+	color: green;
+}
+
+.red {
+	color: red;
+}
