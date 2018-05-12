@@ -12,7 +12,7 @@ var mech = {
 	status : {
 		hull: 100,
 		temp: 18,
-		fuel: 50,
+		fuel: 100,
 		attack: 20,
 		defense: 20
 	},
@@ -20,12 +20,7 @@ var mech = {
 	position : {
 		x: 2,
 		y: 2
-	},
-	
-	hit: function (damage) {
-		this.status.hull -= damage;
 	}
-	
 }
 
 var enemy = {
@@ -45,6 +40,9 @@ var enemy = {
 	
 	hit: function (damage) {
 		this.status.hull -= damage;
+		if (this.status.hull <= 0) {
+			this.die();
+		}
 	},
 	
 	die: function() {
@@ -205,12 +203,15 @@ function move(direction) {
 		case 'e': if (enemy.position.x > 0) {enemy.position.x--;} break;
 	}
 	
+	mech.status.fuel -= 5; //movement cost
+	var fuelSlider = document.getElementById('slider_Fuel');
+	fuelSlider.style.width = mech.status.fuel + '%';
+	fuelSlider.innerText = mech.status.fuel;
+	
 	updateMap();
 }
 
 function attack(direction) {
-	
-	console.log("FIRING");
 	
 	//Check enemy position - if position is in path of beam, damage it
 	//Also destroy terrain in path of beam
@@ -222,16 +223,16 @@ function attack(direction) {
 			}
 			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
 			{
-				enemy.die();
+				enemy.hit(mech.status.attack);
 			}
 			break;
 		case 'e':
 			for (var i = 1; i < mapSize - mech.position.x; i++) {
 				map[mech.position.y][mech.position.x + i] = mapID_destroyed;
 			}
-			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
+			if (enemy.position.y === mech.position.y && enemy.position.x > mech.position.x)
 			{
-				enemy.die();
+				enemy.hit(mech.status.attack);
 			}
 			break;
 		case 's':
@@ -240,7 +241,7 @@ function attack(direction) {
 			}
 			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
 			{
-				enemy.die();
+				enemy.hit(mech.status.attack);
 			}
 			break;
 		case 'w':
@@ -249,7 +250,7 @@ function attack(direction) {
 			}
 			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
 			{
-				enemy.die();
+				enemy.hit(mech.status.attack);
 			}
 			break;
 		default: console.log("Tried to fire in an invalid direction");
