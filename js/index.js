@@ -1,15 +1,29 @@
+var color_field = '#46ad46';
+var color_woods = '#027102';
+var color_mountains = '#959595';
+var color_water = '#003baa';
+var color_destroyed = '#652300';
+var color_mech = '#fff';
+var color_enemy = '#f00';
+
 var mech = {
 	
 	//Values to keep track of health, dangers and resources
 	status : {
 		hull: 100,
 		temp: 18,
-		power: 100
+		fuel: 50,
+		attack: 20,
+		defense: 20
 	},
 	
 	position : {
 		x: 2,
 		y: 2
+	},
+	
+	hit: function (damage) {
+		this.status.hull -= damage;
 	}
 	
 }
@@ -18,12 +32,23 @@ var enemy = {
 	
 	//Values to keep track of health, dangers and resources
 	status : {
-		hull: 100
+		hull: 100,
+		attack: 10,
+		defense: 10,
+		alive:  true
 	},
 	
 	position : {
 		x: 5,
 		y: 5
+	},
+	
+	hit: function (damage) {
+		this.status.hull -= damage;
+	},
+	
+	die: function() {
+		this.status.alive = false;
 	}
 	
 }
@@ -35,9 +60,11 @@ var mapID_field = "-";
 var mapID_woods = ";";
 var mapID_mountains = "^";
 var mapID_water = "~";
+var mapID_destroyed = "#";
 var mapID_mech = "M";
 var mapID_enemy = "X";
 var mapElement = document.getElementById("map");
+
 
 
 /* MAP GENERATION CODE */
@@ -114,9 +141,7 @@ function addBlob(entity, amount, spread, mapObject) {
 }
 
 /*
-	Construct a JS table and iterate through the HTML table
-	setting the contents of each cell to match
-	(gdi React actually would be good for this)
+	Construct a JS table and iterate through the HTML table, setting the contents of each cell to match
 */
 
 function updateMap() {
@@ -139,11 +164,11 @@ function updateMap() {
 			//If there's an object on the cell, set the content to display that object
 			if (mech.position.x == j && mech.position.y == i) {
 				cells[j].textContent = mapID_mech;
-				cells[j].style.color = '#0f0';
+				cells[j].style.color = color_mech;
 			}
-			else if (enemy.position.x == j && enemy.position.y == i) {
+			else if (enemy.position.x == j && enemy.position.y == i && enemy.status.alive) {
 				cells[j].textContent = mapID_enemy;
-				cells[j].style.color = '#f00';
+				cells[j].style.color = color_enemy;
 			} else {
 				cells[j].style.color = '';
 			}
@@ -152,10 +177,11 @@ function updateMap() {
 			
 			//Add color
 			switch (cells[j].textContent) {
-				case mapID_field: cells[j].style.color = '#0a0'; break;
-				case mapID_woods: cells[j].style.color = '#005200'; break;
-				case mapID_mountains: cells[j].style.color = '#959595'; break;
-				case mapID_water:  cells[j].style.color = '#003baa'; break;
+				case mapID_field: 		cells[j].style.color = color_field; break;
+				case mapID_woods: 		cells[j].style.color = color_woods; break;
+				case mapID_mountains: 	cells[j].style.color = color_mountains; break;
+				case mapID_water:  		cells[j].style.color = color_water; break;
+				case mapID_destroyed:  	cells[j].style.color = color_destroyed; cells[j].style.textShadow = '0px 0px 20px ' + color_destroyed; break;
 			}
 			
 		}
@@ -177,6 +203,56 @@ function move(direction) {
 		case 'w': if (enemy.position.x < mapSize-1) {enemy.position.x++;} break;
 		case 'n': if (enemy.position.y < mapSize-1) {enemy.position.y++;} break;
 		case 'e': if (enemy.position.x > 0) {enemy.position.x--;} break;
+	}
+	
+	updateMap();
+}
+
+function attack(direction) {
+	
+	console.log("FIRING");
+	
+	//Check enemy position - if position is in path of beam, damage it
+	//Also destroy terrain in path of beam
+	
+	switch (direction) {
+		case 'n':
+			for (var i = 1; i < mech.position.y + 1; i++) {
+				map[mech.position.y - i][mech.position.x] = mapID_destroyed;
+			}
+			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
+			{
+				enemy.die();
+			}
+			break;
+		case 'e':
+			for (var i = 1; i < mapSize - mech.position.x; i++) {
+				map[mech.position.y][mech.position.x + i] = mapID_destroyed;
+			}
+			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
+			{
+				enemy.die();
+			}
+			break;
+		case 's':
+			for (var i = 1; i < mapSize - mech.position.y; i++) {
+				map[mech.position.y + i][mech.position.x] = mapID_destroyed;
+			}
+			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
+			{
+				enemy.die();
+			}
+			break;
+		case 'w':
+			for (var i = 1; i < mech.position.x + 1; i++) {
+				map[mech.position.y][mech.position.x - i] = mapID_destroyed;
+			}
+			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
+			{
+				enemy.die();
+			}
+			break;
+		default: console.log("Tried to fire in an invalid direction");
 	}
 	
 	updateMap();

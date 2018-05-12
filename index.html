@@ -19,7 +19,12 @@
     <body>
         
 		<div class="label">
-        	<h1>CONTROL PANEL</h1>
+        	<h1>MECH.OS | v0.7</h1>
+			<h3>WELCOME TO ZEUS M19-HEAVY COMMAND INTERFACE</h3>
+			<hr />
+			<p>Interface ready.</p>
+			<p>Waiting for commands...</p>
+			<p>HOSTILE DETECTED: SE</p>
 		</div>
 
 		<div class="panel">
@@ -42,6 +47,28 @@
 				</tr>
 			</table>
 		</div>
+		
+		<div class="panel">
+			<h1>FIRE</h1>
+			<table class='pad'>
+				<tr>
+					<td></td>
+					<td><button onclick="attack('n')">N</button></td>
+					<td></td>
+				</tr>
+				<tr>
+					<td><button onclick="attack('w')">W</button></td>
+					<td></td>
+					<td><button onclick="attack('e')">E</button></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><button onclick="attack('s')">S</button></td>
+					<td></td>
+				</tr>
+			</table>
+		</div>
+		
 		<div class="panel">
 			<h1>POWER</h1>
 			<div class="slider">50</div><button>BOOST ENGINE</button>
