@@ -10,16 +10,20 @@ var mech = {
 	
 	//Values to keep track of health, dangers and resources
 	status : {
-		hull: 100,
+		reactor: 100,
 		temp: 35,
 		fuel: 100,
-		attack: 100,
+		attack: 35,
 		defense: 20
 	},
 	
 	position : {
 		x: 2,
 		y: 2
+	},
+	
+	damage: function(amount) {
+		depleteReactor(amount);
 	}
 }
 
@@ -27,7 +31,7 @@ var enemy = {
 	
 	//Values to keep track of health, dangers and resources
 	status : {
-		hull: 100,
+		reactor: 100,
 		attack: 10,
 		defense: 10,
 		alive:  true
@@ -39,13 +43,24 @@ var enemy = {
 	},
 	
 	hit: function (damage) {
-		this.status.hull -= damage;
-		if (this.status.hull <= 0) {
+		this.status.reactor -= damage;
+		printToConsole('TARGET HIT - Enemy reactor at ' + this.status.reactor + "%", true, false);
+		if (this.status.reactor <= 0) {
+			printToConsole('Target neutralised.', false, true);
 			this.die();
 		}
 	},
 	
 	die: function() {
+		map[this.position.x][this.position.y] = tileDestroyed();
+		if (this.position.x > 0)
+			map[this.position.x-1][this.position.y] = tileDestroyed();
+		if (this.position.x < mapSize-1)
+			map[this.position.x+1][this.position.y] = tileDestroyed();
+		if (this.position.y > 0)
+			map[this.position.x][this.position.y-1] = tileDestroyed();
+		if (this.position.y < mapSize-1)
+			map[this.position.x][this.position.y+1] = tileDestroyed();
 		this.status.alive = false;
 	}
 	
@@ -199,8 +214,6 @@ function updateMap() {
 	var cells;
 	
 	let currentTile = map[mech.position.x][mech.position.y];
-			
-	console.log("Tile temp is " + map[mech.position.x][mech.position.y].temp);
 	
 	let targetTemp = currentTile.temp;
 	let amount = Math.floor((targetTemp-mech.status.temp) / 4);
@@ -253,40 +266,99 @@ function updateMap() {
 }
 
 function skipTurn() {
-	console.log("Waiting");
-	tick();
+	printToConsole("Waiting...");
+	endTurn();
 }
 
-function tick() {
+function endTurn() {
+	enemyTurn();
 	updateMap();
 }
 
-function move(direction) {
+function movePlayer(direction) {
 	
 	let movementCost = 5;
 	
 	if (mech.status.fuel <= movementCost) {
-		console.log("Not enough fuel");
+		printToConsole("Insufficient fuel");
 		return;
 	}
 	
 	switch (direction) {
-		case 'n': if (mech.position.y > 0) {mech.position.y--;} break;
-		case 'e': if (mech.position.x < mapSize-1) {mech.position.x++;} break;
-		case 's': if (mech.position.y < mapSize-1) {mech.position.y++;} break;
-		case 'w': if (mech.position.x > 0) {mech.position.x--;} break;
-		default: console.log("Tried to move invalid direction");
+		case 'n': 
+			if (mech.position.y > 0) {
+				mech.position.y--; 
+				printToConsole('Repositioned North.');
+			} break;
+		case 'e': 
+			if (mech.position.x < mapSize-1) {
+				mech.position.x++; 
+				printToConsole('Repositioned East.');
+			} 
+			break;
+		case 's': 
+			if (mech.position.y < mapSize-1) {
+				mech.position.y++; 
+				printToConsole('Repositioned South.');
+			} 
+			break;
+		case 'w': 
+			if (mech.position.x > 0) {
+				mech.position.x--; 
+				printToConsole('Repositioned West.');
+			} 
+			break;
+		default: console.log("Tried to move in an invalid direction");
 	}
+	depleteFuel(movementCost);
+	endTurn();
+}
+
+function enemyTurn() {
+	
+	/* ENEMY PRIORITIES:
+	1) Maintain distance from player
+	2) Seek high-defense tiles
+	3) Attack targets when possible
+	*/
+	
+	//choose direction
+	
+	var direction;
+	
+	var selector = Math.random();
+	
+	if (selector < .25) {
+		direction = 'n';
+	} else if (selector < .5) {
+		direction = 'e';
+	} else if (selector < .75) {
+		direction = 's';
+	} else {
+		direction = 'w';
+	}
+	
+	moveEnemy(direction);
+	
+}
+
+function moveEnemy(direction) {
 	
 	switch (direction) {
-		case 's': if (enemy.position.y > 0) {enemy.position.y--;} break;
-		case 'w': if (enemy.position.x < mapSize-1) {enemy.position.x++;} break;
-		case 'n': if (enemy.position.y < mapSize-1) {enemy.position.y++;} break;
-		case 'e': if (enemy.position.x > 0) {enemy.position.x--;} break;
+		case 'n': if (enemy.position.y > 0) {enemy.position.y--;} break;
+		case 'e': if (enemy.position.x < mapSize-1) {enemy.position.x++;} break;
+		case 's': if (enemy.position.y < mapSize-1) {enemy.position.y++;} break;
+		case 'w': if (enemy.position.x > 0) {enemy.position.x--;} break;
 	}
+}
+
+function depletereactor(amount) {
 	
-	depleteFuel(movementCost);
-	tick();
+	mech.status.reactor -= amount;
+	
+	var reactorMeter = document.getElementById('meter_Reactor');
+	reactorMeter.value = mech.status.reactor;
+	reactorMeter.innerText = mech.status.reactor + "%";
 }
 
 function depleteFuel(amount) {
@@ -315,6 +387,7 @@ function attack(direction) {
 	
 	switch (direction) {
 		case 'n':
+			printToConsole('Main beam fired - bearing North');
 			for (var i = 1; i < mech.position.y + 1; i++) {
 				map[mech.position.x][mech.position.y - i] = tileDestroyed();
 			}
@@ -324,6 +397,7 @@ function attack(direction) {
 			}
 			break;
 		case 'e':
+			printToConsole('Main beam fired - bearing East');
 			for (var i = 1; i < mapSize - mech.position.x; i++) {
 				map[mech.position.x + i][mech.position.y] = tileDestroyed();
 			}
@@ -333,6 +407,7 @@ function attack(direction) {
 			}
 			break;
 		case 's':
+			printToConsole('Main beam fired - bearing South');
 			for (var i = 1; i < mapSize - mech.position.y; i++) {
 				map[mech.position.x][mech.position.y + i] = tileDestroyed();
 			}
@@ -342,6 +417,7 @@ function attack(direction) {
 			}
 			break;
 		case 'w':
+			printToConsole('Main beam fired - bearing West');
 			for (var i = 1; i < mech.position.x + 1; i++) {
 				map[mech.position.x - i][mech.position.y] = tileDestroyed();
 			}
@@ -355,8 +431,34 @@ function attack(direction) {
 	
 	changeTemp(15);
 	
-	tick();
+	endTurn();
 }
 
+/* HANDLE INGAME CONSOLE */
+
+function printToConsole(text, isBlinking, isStrong) {
+	let gameConsole = document.getElementById('gameConsole');
+	
+	let markupString = "";
+	
+	let classString = "";
+	
+	if (isBlinking) {
+		classString = "class='blinking'";
+	}
+	
+	if (isStrong) {
+		markupString += "<strong " + classString + ">" + text + "</strong>"
+	} else {
+		markupString += "<p " + classString + ">" + text + "</p>"
+	}
+	
+	gameConsole.innerHTML += markupString;
+	
+	gameConsole.scrollTop = gameConsole.scrollHeight;
+}
+
+
+//Start the game
 var map = buildMap();
 updateMap();

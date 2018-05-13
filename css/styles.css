@@ -1,6 +1,7 @@
 body {
 	font-family: monospace;
 	background-color: #111;
+	background: linear-gradient(to bottom right, #222, #111) fixed;
 	color: #3f3;
 	display: flex;
 	flex-flow: row wrap;
@@ -20,19 +21,51 @@ body {
 	
 	display: flex;
 	flex-flow: column wrap;
-	box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+	box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
 	transition: .2s ease;
 	min-width: 200px;
 }
 
-.label {
+::-webkit-scrollbar {
+	background: #000;
+}
+
+::-webkit-scrollbar-track {
+	background: rgba(0, 221, 0, 0.18);
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(0, 255, 0, 0.63);
+}
+
+.console {
 	background-color: #000;
-	border: 1px solid #555;
+	background: linear-gradient(to bottom left, #111, #000);
+	border: 5px inset rgba(131, 131, 131, 0.25);
 	margin: auto;
 	padding: 1em;
 	height: 20%;
 	box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.26);
 	text-align: left;
+	overflow-y: scroll;
+	height: 224px;
+}
+
+.console strong {
+	color: rgb(255, 45, 45);
+}
+
+.blinking {
+	animation: blink .8s linear infinite;
+}
+
+@keyframes blink {
+	60% {
+		opacity: 1;
+	}
+	80% {
+		opacity: 0;
+	}
 }
 
 button {

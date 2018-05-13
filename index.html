@@ -18,13 +18,13 @@
     
     <body>
         
-		<div class="label">
+		<div class="console" id="gameConsole">
         	<h1>MECH.OS | v0.7</h1>
 			<h3>WELCOME TO ZEUS M19-HEAVY COMMAND INTERFACE</h3>
 			<hr />
 			<p>Interface ready.</p>
 			<p>Waiting for commands...</p>
-			<p>HOSTILE DETECTED: SE</p>
+			<p><strong class="blinking">HOSTILE DETECTED</strong></p>
 		</div>
 
 		<div class="panel">
@@ -32,17 +32,17 @@
 			<table class='pad'>
 				<tr>
 					<td></td>
-					<td><button onclick="move('n')">N</button></td>
+					<td><button onclick="movePlayer('n')">N</button></td>
 					<td></td>
 				</tr>
 				<tr>
-					<td><button onclick="move('w')">W</button></td>
+					<td><button onclick="movePlayer('w')">W</button></td>
 					<td></td>
-					<td><button onclick="move('e')">E</button></td>
+					<td><button onclick="movePlayer('e')">E</button></td>
 				</tr>
 				<tr>
 					<td></td>
-					<td><button onclick="move('s')">S</button></td>
+					<td><button onclick="movePlayer('s')">S</button></td>
 					<td></td>
 				</tr>
 			</table>
@@ -72,6 +72,8 @@
 		</div>
 		
 		<div class="panel">
+			<h2>REACTOR</h2>
+			<meter class="meter" min="0" low="25" optimum="100" high="75" value="100" max="100" id="meter_Reactor"></meter>
 			<h2>FUEL</h2>
 			<meter class="meter" min="0" low="25" optimum="100" high="60" value="100" max="100" id="meter_Fuel"></meter>
 			<h2>TEMP</h2>
