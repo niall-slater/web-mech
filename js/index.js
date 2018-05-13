@@ -188,6 +188,13 @@ function updateMap() {
 
 function move(direction) {
 	
+	let movementCost = 5;
+	
+	if (mech.status.fuel <= movementCost) {
+		console.log("Not enough fuel");
+		return;
+	}
+	
 	switch (direction) {
 		case 'n': if (mech.position.y > 0) {mech.position.y--;} break;
 		case 'e': if (mech.position.x < mapSize-1) {mech.position.x++;} break;
@@ -203,12 +210,18 @@ function move(direction) {
 		case 'e': if (enemy.position.x > 0) {enemy.position.x--;} break;
 	}
 	
-	mech.status.fuel -= 5; //movement cost
-	var fuelMeter = document.getElementById('meter_Fuel');
-	fuelMeter.style.width = mech.status.fuel + '%';
-	fuelMeter.innerText = mech.status.fuel;
-	
+	depleteFuel(movementCost);
 	updateMap();
+}
+
+function depleteFuel(amount) {
+	
+	mech.status.fuel -= amount;
+	
+	var fuelMeter = document.getElementById('meter_Fuel');
+	console.log(fuelMeter.value);
+	fuelMeter.value = mech.status.fuel;
+	fuelMeter.innerText = mech.status.fuel + "%";
 }
 
 function attack(direction) {
