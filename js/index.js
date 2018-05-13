@@ -234,10 +234,7 @@ function addBlob(entity, amount, spread, mapObject) {
 	Construct a JS table and iterate through the HTML table, setting the contents of each cell to match
 */
 
-function updateMap() {
-	
-	var rows = mapElement.rows;
-	var cells;
+function updateMechStatus() {
 	
 	let currentTile = map[mech.position.x][mech.position.y];
 	
@@ -247,10 +244,25 @@ function updateMap() {
 		changeTemp(amount);
 	}
 	
+	//Print warning messages
+	if (mech.status.alive) {
+		if (mech.status.temp > v_tempMax) {
+			printToConsole("Reactor overheating", true, true);
+		}
+	}
+}
+
+function updateMap() {
+	
+	var rows = mapElement.rows;
+	var cells;
+	
 	for (var x = 0; x < mapSize; x++) {
 		
 		for (var y = 0; y < mapSize; y++) {
 			let tile = map[x][y];
+			
+			//Update tiles
 		}
 	}
 	
@@ -303,14 +315,8 @@ function skipTurn() {
 
 function endTurn() {
 	enemyTurn();
+	updateMechStatus();
 	updateMap();
-	
-	//Print warning messages
-	if (mech.status.alive) {
-		if (mech.status.temp > v_tempMax) {
-			printToConsole("Reactor overheating", true, true);
-		}
-	}
 }
 
 function movePlayer(direction) {
@@ -380,7 +386,28 @@ function enemyTurn() {
 		direction = 'w';
 	}
 	
-	moveEnemy(direction);
+	if (mech.position.x < enemy.position.x && direction === 'e') {
+		direction = 'w';
+	}
+	if (mech.position.y < enemy.position.y && direction === 's') {
+		direction = 'n';
+	}
+	if (mech.position.y > enemy.position.y && direction === 'n') {
+		direction = 's';
+	}
+	if (mech.position.x > enemy.position.x && direction === 'w') {
+		direction = 'e';
+	}
+	
+	//TODO: check to stop enemy moving onto mech space
+	
+	var moving = Math.random();
+	
+	if (moving > 0.2) {
+		moveEnemy(direction);
+	} else {
+		enemyAttack(direction);
+	}
 	
 }
 
@@ -396,56 +423,52 @@ function moveEnemy(direction) {
 
 function enemyAttack(direction) {
 	
-	//Check enemy position - if position is in path of beam, damage it
+	//Check mech position - if position is in path of beam, damage it
 	//Also destroy terrain in path of beam
+	
+	printToConsole('Enemy beam detected', false, true);
 	
 	switch (direction) {
 		case 'n':
-			printToConsole('Main beam fired - bearing North');
-			for (var i = 1; i < mech.position.y + 1; i++) {
-				map[mech.position.x][mech.position.y - i] = tileDestroyed();
-			}
-			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
+			if (mech.position.x === enemy.position.x && mech.position.y < enemy.position.y)
 			{
-				enemy.hit(mech.status.attack);
+				mech.hit(enemy.status.attack);
+			}
+			for (var i = 1; i < enemy.position.y + 1; i++) {
+				map[enemy.position.x][enemy.position.y - i] = tileDestroyed();
 			}
 			break;
 		case 'e':
-			printToConsole('Main beam fired - bearing East');
-			for (var i = 1; i < mapSize - mech.position.x; i++) {
-				map[mech.position.x + i][mech.position.y] = tileDestroyed();
-			}
-			if (enemy.position.y === mech.position.y && enemy.position.x > mech.position.x)
+			if (mech.position.y === enemy.position.y && mech.position.x > enemy.position.x)
 			{
-				enemy.hit(mech.status.attack);
+				mech.hit(enemy.status.attack);
+			}
+			for (var i = 1; i < mapSize - enemy.position.x; i++) {
+				map[enemy.position.x + i][enemy.position.y] = tileDestroyed();
 			}
 			break;
 		case 's':
-			printToConsole('Main beam fired - bearing South');
-			for (var i = 1; i < mapSize - mech.position.y; i++) {
-				map[mech.position.x][mech.position.y + i] = tileDestroyed();
-			}
-			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
+			if (enemy.position.x === mech.position.x && mech.position.y > enemy.position.y)
 			{
-				enemy.hit(mech.status.attack);
+				mech.hit(enemy.status.attack);
+			}
+			for (var i = 1; i < mapSize - enemy.position.y; i++) {
+				map[enemy.position.x][enemy.position.y + i] = tileDestroyed();
 			}
 			break;
 		case 'w':
-			printToConsole('Main beam fired - bearing West');
-			for (var i = 1; i < mech.position.x + 1; i++) {
-				map[mech.position.x - i][mech.position.y] = tileDestroyed();
-			}
-			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
+			if (enemy.position.y === mech.position.y && mech.position.x < enemy.position.x)
 			{
-				enemy.hit(mech.status.attack);
+				mech.hit(enemy.status.attack);
+			}
+			for (var i = 1; i < enemy.position.x + 1; i++) {
+				map[enemy.position.x - i][enemy.position.y] = tileDestroyed();
 			}
 			break;
-		default: console.log("Tried to fire in an invalid direction");
+		default: console.log("Enemy tried to fire in an invalid direction");
 	}
 	
-	changeTemp(15);
-	
-	endTurn();
+	updateMap();
 }
 
 function depleteReactor(amount) {
