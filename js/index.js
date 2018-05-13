@@ -11,7 +11,7 @@ var mech = {
 	//Values to keep track of health, dangers and resources
 	status : {
 		hull: 100,
-		temp: 18,
+		temp: 35,
 		fuel: 100,
 		attack: 100,
 		defense: 20
@@ -171,8 +171,6 @@ function updateMap() {
 				cells[j].style.color = '';
 			}
 			
-			
-			
 			//Add color
 			switch (cells[j].textContent) {
 				case mapID_field: 		cells[j].style.color = color_field; break;
@@ -184,6 +182,14 @@ function updateMap() {
 			
 		}
 	}
+}
+
+function wait() {
+	tick();
+}
+
+function tick() {
+	updateMap();
 }
 
 function move(direction) {
@@ -211,7 +217,7 @@ function move(direction) {
 	}
 	
 	depleteFuel(movementCost);
-	updateMap();
+	tick();
 }
 
 function depleteFuel(amount) {
@@ -269,8 +275,8 @@ function attack(direction) {
 		default: console.log("Tried to fire in an invalid direction");
 	}
 	
-	updateMap();
+	tick();
 }
 
 var map = buildMap();
-updateMap(mapElement);
+updateMap();
