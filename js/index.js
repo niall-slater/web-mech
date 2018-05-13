@@ -13,7 +13,7 @@ var mech = {
 		hull: 100,
 		temp: 18,
 		fuel: 100,
-		attack: 20,
+		attack: 100,
 		defense: 20
 	},
 	
@@ -204,9 +204,9 @@ function move(direction) {
 	}
 	
 	mech.status.fuel -= 5; //movement cost
-	var fuelSlider = document.getElementById('slider_Fuel');
-	fuelSlider.style.width = mech.status.fuel + '%';
-	fuelSlider.innerText = mech.status.fuel;
+	var fuelMeter = document.getElementById('meter_Fuel');
+	fuelMeter.style.width = mech.status.fuel + '%';
+	fuelMeter.innerText = mech.status.fuel;
 	
 	updateMap();
 }

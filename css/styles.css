@@ -84,6 +84,11 @@ button {
 
 /* CUSTOM SLIDER */
 
+.meter {
+	background-color: #000;
+	border-radius: 2px;
+}
+
 .slider {
 	background-color: #000;
 	border-radius: 2px;
