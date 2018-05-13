@@ -106,6 +106,16 @@ function tileWoods() {
 	return tile;
 }
 
+function tileDestroyed() {
+	let tile = {
+		type: mapID_destroyed,
+		temp: 80,
+		movementCost: 6,
+		defense: 0
+	};
+	return tile;
+}
+
 
 
 /* MAP GENERATION CODE */
@@ -193,10 +203,9 @@ function updateMap() {
 	console.log("Tile temp is " + map[mech.position.x][mech.position.y].temp);
 	
 	let targetTemp = currentTile.temp;
-	if (mech.status.temp < targetTemp) {
-		changeTemp(1);
-	} else if (mech.status.temp > targetTemp) {
-		changeTemp(-1);
+	let amount = Math.floor((targetTemp-mech.status.temp) / 4);
+	if (mech.status.temp != targetTemp) {
+		changeTemp(amount);
 	}
 	
 	for (var x = 0; x < mapSize; x++) {
@@ -307,7 +316,7 @@ function attack(direction) {
 	switch (direction) {
 		case 'n':
 			for (var i = 1; i < mech.position.y + 1; i++) {
-				map[mech.position.x][mech.position.y - i] = mapID_destroyed;
+				map[mech.position.x][mech.position.y - i] = tileDestroyed();
 			}
 			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
 			{
@@ -316,7 +325,7 @@ function attack(direction) {
 			break;
 		case 'e':
 			for (var i = 1; i < mapSize - mech.position.x; i++) {
-				map[mech.position.x + i][mech.position.y] = mapID_destroyed;
+				map[mech.position.x + i][mech.position.y] = tileDestroyed();
 			}
 			if (enemy.position.y === mech.position.y && enemy.position.x > mech.position.x)
 			{
@@ -325,7 +334,7 @@ function attack(direction) {
 			break;
 		case 's':
 			for (var i = 1; i < mapSize - mech.position.y; i++) {
-				map[mech.position.x][mech.position.y + i] = mapID_destroyed;
+				map[mech.position.x][mech.position.y + i] = tileDestroyed();
 			}
 			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
 			{
@@ -334,7 +343,7 @@ function attack(direction) {
 			break;
 		case 'w':
 			for (var i = 1; i < mech.position.x + 1; i++) {
-				map[mech.position.x - i][mech.position.y] = mapID_destroyed;
+				map[mech.position.x - i][mech.position.y] = tileDestroyed();
 			}
 			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
 			{
