@@ -1,3 +1,5 @@
+//Colors
+
 var color_field = '#46ad46';
 var color_woods = '#027102';
 var color_mountains = '#959595';
@@ -5,6 +7,11 @@ var color_water = '#003baa';
 var color_destroyed = '#652300';
 var color_mech = '#fff';
 var color_enemy = '#f00';
+
+//Game variables
+
+var v_tempMax = 65; //Temperature at which reactor takes damage
+var v_tempMin = 3;
 
 var mech = {
 	
@@ -14,7 +21,8 @@ var mech = {
 		temp: 35,
 		fuel: 100,
 		attack: 35,
-		defense: 20
+		defense: 20,
+		alive: true
 	},
 	
 	position : {
@@ -24,6 +32,21 @@ var mech = {
 	
 	damage: function(amount) {
 		depleteReactor(amount);
+	},
+	
+	die: function() {
+		map[this.position.x][this.position.y] = tileDestroyed();
+		if (this.position.x > 0)
+			map[this.position.x-1][this.position.y] = tileDestroyed();
+		if (this.position.x < mapSize-1)
+			map[this.position.x+1][this.position.y] = tileDestroyed();
+		if (this.position.y > 0)
+			map[this.position.x][this.position.y-1] = tileDestroyed();
+		if (this.position.y < mapSize-1)
+			map[this.position.x][this.position.y+1] = tileDestroyed();
+		this.status.alive = false;
+		printToConsole("##REACTOR OVERLOAD##<br />##REACTOR OVERLOAD##<br />##REACTOR OVERLOAD##<br />", true, true);
+		setTimeout(consoleDie, 600);
 	}
 }
 
@@ -241,7 +264,7 @@ function updateMap() {
 			cells[x].textContent = map[x][y].type;
 			
 			//If there's an object on the cell, set the content to display that object
-			if (mech.position.x == x && mech.position.y == y) {
+			if (mech.position.x == x && mech.position.y == y && mech.status.alive) {
 				cells[x].textContent = mapID_mech;
 				cells[x].style.color = color_mech;
 			}
@@ -266,6 +289,11 @@ function updateMap() {
 }
 
 function skipTurn() {
+	
+	if (!mech.status.alive) {
+		return;
+	}
+	
 	printToConsole("Waiting...");
 	endTurn();
 }
@@ -273,9 +301,20 @@ function skipTurn() {
 function endTurn() {
 	enemyTurn();
 	updateMap();
+	
+	//Print warning messages
+	if (mech.status.alive) {
+		if (mech.status.temp > v_tempMax) {
+			printToConsole("Reactor overheating", true, true);
+		}
+	}
 }
 
 function movePlayer(direction) {
+	
+	if (!mech.status.alive) {
+		return;
+	}
 	
 	let movementCost = 5;
 	
@@ -352,13 +391,71 @@ function moveEnemy(direction) {
 	}
 }
 
-function depletereactor(amount) {
+function enemyAttack(direction) {
+	
+	//Check enemy position - if position is in path of beam, damage it
+	//Also destroy terrain in path of beam
+	
+	switch (direction) {
+		case 'n':
+			printToConsole('Main beam fired - bearing North');
+			for (var i = 1; i < mech.position.y + 1; i++) {
+				map[mech.position.x][mech.position.y - i] = tileDestroyed();
+			}
+			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
+			{
+				enemy.hit(mech.status.attack);
+			}
+			break;
+		case 'e':
+			printToConsole('Main beam fired - bearing East');
+			for (var i = 1; i < mapSize - mech.position.x; i++) {
+				map[mech.position.x + i][mech.position.y] = tileDestroyed();
+			}
+			if (enemy.position.y === mech.position.y && enemy.position.x > mech.position.x)
+			{
+				enemy.hit(mech.status.attack);
+			}
+			break;
+		case 's':
+			printToConsole('Main beam fired - bearing South');
+			for (var i = 1; i < mapSize - mech.position.y; i++) {
+				map[mech.position.x][mech.position.y + i] = tileDestroyed();
+			}
+			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
+			{
+				enemy.hit(mech.status.attack);
+			}
+			break;
+		case 'w':
+			printToConsole('Main beam fired - bearing West');
+			for (var i = 1; i < mech.position.x + 1; i++) {
+				map[mech.position.x - i][mech.position.y] = tileDestroyed();
+			}
+			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
+			{
+				enemy.hit(mech.status.attack);
+			}
+			break;
+		default: console.log("Tried to fire in an invalid direction");
+	}
+	
+	changeTemp(15);
+	
+	endTurn();
+}
+
+function depleteReactor(amount) {
 	
 	mech.status.reactor -= amount;
 	
 	var reactorMeter = document.getElementById('meter_Reactor');
 	reactorMeter.value = mech.status.reactor;
 	reactorMeter.innerText = mech.status.reactor + "%";
+	
+	if (mech.status.reactor <= 0) {
+		mech.die();
+	}
 }
 
 function depleteFuel(amount) {
@@ -378,12 +475,19 @@ function changeTemp(amount) {
 	tempMeter.value = mech.status.temp;
 	tempMeter.innerText = mech.status.fuel + "C";
 	
+	if (mech.status.temp > v_tempMax) {
+		depleteReactor(mech.status.temp - v_tempMax);
+	}
 }
 
 function attack(direction) {
 	
 	//Check enemy position - if position is in path of beam, damage it
 	//Also destroy terrain in path of beam
+	
+	if (!mech.status.alive) {
+		return;
+	}
 	
 	switch (direction) {
 		case 'n':
@@ -456,6 +560,18 @@ function printToConsole(text, isBlinking, isStrong) {
 	gameConsole.innerHTML += markupString;
 	
 	gameConsole.scrollTop = gameConsole.scrollHeight;
+}
+
+function consoleDie() {
+	
+	let gameConsole = document.getElementById('gameConsole');
+	
+	gameConsole.className += " consoleDeath";
+	
+	setTimeout(function() {
+		gameConsole.innerHTML = "<h1 span style='color:#0f0; text-align:center;'>GAME OVER</h1>";
+		gameConsole.className = "console consoleDead";
+	}, 800);
 }
 
 
