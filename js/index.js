@@ -66,8 +66,11 @@ var enemy = {
 	},
 	
 	hit: function (damage) {
-		this.status.reactor -= damage;
-		printToConsole('TARGET HIT - Enemy reactor at ' + this.status.reactor + "%", true, false);
+		let damageResult = damage - map[this.position.x][this.position.y].defense;
+		if (damageResult <= 0)
+			damageResult = 1;
+		this.status.reactor -= damageResult;
+		printToConsole('TARGET HIT FOR ' + damageResult + ' DAMAGE - Enemy reactor at ' + this.status.reactor + "%", true, false);
 		if (this.status.reactor <= 0) {
 			printToConsole('Target neutralised.', false, true);
 			this.die();
@@ -492,42 +495,42 @@ function attack(direction) {
 	switch (direction) {
 		case 'n':
 			printToConsole('Main beam fired - bearing North');
-			for (var i = 1; i < mech.position.y + 1; i++) {
-				map[mech.position.x][mech.position.y - i] = tileDestroyed();
-			}
 			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
 			{
 				enemy.hit(mech.status.attack);
 			}
+			for (var i = 1; i < mech.position.y + 1; i++) {
+				map[mech.position.x][mech.position.y - i] = tileDestroyed();
+			}
 			break;
 		case 'e':
 			printToConsole('Main beam fired - bearing East');
-			for (var i = 1; i < mapSize - mech.position.x; i++) {
-				map[mech.position.x + i][mech.position.y] = tileDestroyed();
-			}
 			if (enemy.position.y === mech.position.y && enemy.position.x > mech.position.x)
 			{
 				enemy.hit(mech.status.attack);
 			}
+			for (var i = 1; i < mapSize - mech.position.x; i++) {
+				map[mech.position.x + i][mech.position.y] = tileDestroyed();
+			}
 			break;
 		case 's':
 			printToConsole('Main beam fired - bearing South');
-			for (var i = 1; i < mapSize - mech.position.y; i++) {
-				map[mech.position.x][mech.position.y + i] = tileDestroyed();
-			}
 			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
 			{
 				enemy.hit(mech.status.attack);
 			}
+			for (var i = 1; i < mapSize - mech.position.y; i++) {
+				map[mech.position.x][mech.position.y + i] = tileDestroyed();
+			}
 			break;
 		case 'w':
 			printToConsole('Main beam fired - bearing West');
-			for (var i = 1; i < mech.position.x + 1; i++) {
-				map[mech.position.x - i][mech.position.y] = tileDestroyed();
-			}
 			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
 			{
 				enemy.hit(mech.status.attack);
+			}
+			for (var i = 1; i < mech.position.x + 1; i++) {
+				map[mech.position.x - i][mech.position.y] = tileDestroyed();
 			}
 			break;
 		default: console.log("Tried to fire in an invalid direction");
