@@ -46,7 +46,7 @@ var mech = {
 			map[this.position.x][this.position.y+1] = tileDestroyed();
 		this.status.alive = false;
 		printToConsole("##REACTOR OVERLOAD##<br />##REACTOR OVERLOAD##<br />##REACTOR OVERLOAD##<br />", true, true);
-		setTimeout(consoleDie, 600);
+		setTimeout(consoleDie, 2000);
 	}
 }
 
@@ -238,6 +238,7 @@ function updateMechStatus() {
 	
 	let currentTile = map[mech.position.x][mech.position.y];
 	
+	//update temperature
 	let targetTemp = currentTile.temp;
 	let amount = Math.floor((targetTemp-mech.status.temp) / 4);
 	if (mech.status.temp != targetTemp) {
@@ -247,8 +248,14 @@ function updateMechStatus() {
 	//Print warning messages
 	if (mech.status.alive) {
 		if (mech.status.temp > v_tempMax) {
-			printToConsole("Reactor overheating", true, true);
+			printToConsole("REACTOR OVERHEATING", true, true);
 		}
+	}
+	
+	//handle collision
+	if (mech.position.x === enemy.position.x && mech.position.y === enemy.position.y) {
+		mech.damage(10);
+		printToConsole("PROXIMITY ALERT: REACTOR STRESS", true, true);
 	}
 }
 
@@ -399,11 +406,9 @@ function enemyTurn() {
 		direction = 'e';
 	}
 	
-	//TODO: check to stop enemy moving onto mech space
-	
 	var moving = Math.random();
 	
-	if (moving > 0.2) {
+	if (moving > 0.1) {
 		moveEnemy(direction);
 	} else {
 		enemyAttack(direction);
@@ -597,7 +602,7 @@ function consoleDie() {
 	setTimeout(function() {
 		gameConsole.innerHTML = "<h1 span style='color:#0f0; text-align:center;'>GAME OVER</h1>";
 		gameConsole.className = "console consoleDead";
-	}, 800);
+	}, 1500);
 }
 
 

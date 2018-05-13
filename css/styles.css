@@ -26,7 +26,7 @@ body {
 	min-width: 200px;
 }
 
-::-webkit-scrollbar {
+.console::-webkit-scrollbar {
 	background: #000;
 }
 
