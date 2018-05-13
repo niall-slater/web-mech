@@ -144,7 +144,7 @@ function buildMap() {
 	for (var i = 0; i < num_rivers; i++) {
 		let riverY = 2 + Math.floor(Math.random() * mapSize-2);
 		for (var x = 0; x < mapSize; x++) {
-			result[riverY][x] = tileRiver();
+			result[x][riverY] = tileRiver();
 		}
 	}
 	
@@ -209,36 +209,34 @@ function updateMap() {
 	/* Update HTML table element */
 	
 	//Iterate over rows
-	for (var i = 0; i < rows.length; i++) {
-		cells = rows[i].cells;
+	for (var y = 0; y < rows.length; y++) {
+		cells = rows[y].cells;
 		
 		//Iterate over cells
-		for (var j = 0; j < cells.length; j++) {
-			
-			//i = y; j = x
+		for (var x = 0; x < cells.length; x++) {
 			
 			//For each cell, set the text content to be the map tile
-			cells[j].textContent = map[i][j].type;
+			cells[x].textContent = map[x][y].type;
 			
 			//If there's an object on the cell, set the content to display that object
-			if (mech.position.x == j && mech.position.y == i) {
-				cells[j].textContent = mapID_mech;
-				cells[j].style.color = color_mech;
+			if (mech.position.x == x && mech.position.y == y) {
+				cells[x].textContent = mapID_mech;
+				cells[x].style.color = color_mech;
 			}
-			else if (enemy.position.x == j && enemy.position.y == i && enemy.status.alive) {
-				cells[j].textContent = mapID_enemy;
-				cells[j].style.color = color_enemy;
+			else if (enemy.position.x == x && enemy.position.y == y && enemy.status.alive) {
+				cells[x].textContent = mapID_enemy;
+				cells[x].style.color = color_enemy;
 			} else {
-				cells[j].style.color = '';
+				cells[x].style.color = '';
 			}
 			
 			//Add color to cell contents
-			switch (cells[j].textContent) {
-				case mapID_field: 		cells[j].style.color = color_field; break;
-				case mapID_woods: 		cells[j].style.color = color_woods; break;
-				case mapID_mountains: 	cells[j].style.color = color_mountains; break;
-				case mapID_water:  		cells[j].style.color = color_water; break;
-				case mapID_destroyed:  	cells[j].style.color = color_destroyed; cells[j].style.textShadow = '0px 0px 20px ' + color_destroyed; break;
+			switch (cells[x].textContent) {
+				case mapID_field: 		cells[x].style.color = color_field; break;
+				case mapID_woods: 		cells[x].style.color = color_woods; break;
+				case mapID_mountains: 	cells[x].style.color = color_mountains; break;
+				case mapID_water:  		cells[x].style.color = color_water; break;
+				case mapID_destroyed:  	cells[x].style.color = color_destroyed; cells[x].style.textShadow = '0px 0px 20px ' + color_destroyed; break;
 			}
 			
 		}
@@ -309,7 +307,7 @@ function attack(direction) {
 	switch (direction) {
 		case 'n':
 			for (var i = 1; i < mech.position.y + 1; i++) {
-				map[mech.position.y - i][mech.position.x] = mapID_destroyed;
+				map[mech.position.x][mech.position.y - i] = mapID_destroyed;
 			}
 			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
 			{
@@ -318,7 +316,7 @@ function attack(direction) {
 			break;
 		case 'e':
 			for (var i = 1; i < mapSize - mech.position.x; i++) {
-				map[mech.position.y][mech.position.x + i] = mapID_destroyed;
+				map[mech.position.x + i][mech.position.y] = mapID_destroyed;
 			}
 			if (enemy.position.y === mech.position.y && enemy.position.x > mech.position.x)
 			{
@@ -327,7 +325,7 @@ function attack(direction) {
 			break;
 		case 's':
 			for (var i = 1; i < mapSize - mech.position.y; i++) {
-				map[mech.position.y + i][mech.position.x] = mapID_destroyed;
+				map[mech.position.x][mech.position.y + i] = mapID_destroyed;
 			}
 			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
 			{
@@ -336,7 +334,7 @@ function attack(direction) {
 			break;
 		case 'w':
 			for (var i = 1; i < mech.position.x + 1; i++) {
-				map[mech.position.y][mech.position.x - i] = mapID_destroyed;
+				map[mech.position.x - i][mech.position.y] = mapID_destroyed;
 			}
 			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
 			{
