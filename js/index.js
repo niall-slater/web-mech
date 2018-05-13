@@ -64,6 +64,49 @@ var mapID_enemy = "X";
 var mapElement = document.getElementById("map");
 
 
+/* TILE DATA */
+
+function tileField() {
+	let tile = {
+		type: mapID_field,
+		temp: 25,
+		movementCost: 2,
+		defense: 5
+	};
+	return tile;		
+}
+
+function tileRiver() {
+	let tile = {
+		type: mapID_water,
+		temp: 2,
+		movementCost: 14,
+		defense: 0
+	};
+	return tile;
+}
+
+function tileMountain() {
+	let tile = {
+		type: mapID_mountains,
+		temp: 10,
+		movementCost: 20,
+		defense: 70
+	};
+	return tile;
+}
+
+function tileWoods() {
+	let tile = {
+		type: mapID_woods,
+		temp: 25,
+		movementCost: 8,
+		defense: 35
+	};
+	return tile;
+}
+
+
 
 /* MAP GENERATION CODE */
 
@@ -81,9 +124,7 @@ function buildMap() {
 		
 		for (var x = 0; x < mapSize; x++) {
 			
-			var tile = mapID_field;
-			
-			row.push(tile);
+			row.push(tileField());
 			
 		}
 		
@@ -92,18 +133,18 @@ function buildMap() {
 	
 	//Add blobs of woodland
 	
-	result = addBlob(mapID_woods, num_woods, 1, result);
+	result = addBlob(tileWoods(), num_woods, 1, result);
 	
 	//Add blobs of mountains
 	
-	result = addBlob(mapID_mountains, num_mountains, 1, result);
+	result = addBlob(tileMountain(), num_mountains, 1, result);
 	
 	//Run rivers across map
 	
 	for (var i = 0; i < num_rivers; i++) {
 		let riverY = 2 + Math.floor(Math.random() * mapSize-2);
 		for (var x = 0; x < mapSize; x++) {
-			result[riverY][x] = mapID_water;
+			result[riverY][x] = tileRiver();
 		}
 	}
 	
@@ -147,6 +188,26 @@ function updateMap() {
 	var rows = mapElement.rows;
 	var cells;
 	
+	let currentTile = map[mech.position.x][mech.position.y];
+			
+	console.log("Tile temp is " + map[mech.position.x][mech.position.y].temp);
+	
+	let targetTemp = currentTile.temp;
+	if (mech.status.temp < targetTemp) {
+		changeTemp(1);
+	} else if (mech.status.temp > targetTemp) {
+		changeTemp(-1);
+	}
+	
+	for (var x = 0; x < mapSize; x++) {
+		
+		for (var y = 0; y < mapSize; y++) {
+			let tile = map[x][y];
+		}
+	}
+	
+	/* Update HTML table element */
+	
 	//Iterate over rows
 	for (var i = 0; i < rows.length; i++) {
 		cells = rows[i].cells;
@@ -157,7 +218,7 @@ function updateMap() {
 			//i = y; j = x
 			
 			//For each cell, set the text content to be the map tile
-			cells[j].textContent = map[i][j];
+			cells[j].textContent = map[i][j].type;
 			
 			//If there's an object on the cell, set the content to display that object
 			if (mech.position.x == j && mech.position.y == i) {
@@ -171,7 +232,7 @@ function updateMap() {
 				cells[j].style.color = '';
 			}
 			
-			//Add color
+			//Add color to cell contents
 			switch (cells[j].textContent) {
 				case mapID_field: 		cells[j].style.color = color_field; break;
 				case mapID_woods: 		cells[j].style.color = color_woods; break;
@@ -184,7 +245,8 @@ function updateMap() {
 	}
 }
 
-function wait() {
+function skipTurn() {
+	console.log("Waiting");
 	tick();
 }
 
@@ -225,9 +287,18 @@ function depleteFuel(amount) {
 	mech.status.fuel -= amount;
 	
 	var fuelMeter = document.getElementById('meter_Fuel');
-	console.log(fuelMeter.value);
 	fuelMeter.value = mech.status.fuel;
 	fuelMeter.innerText = mech.status.fuel + "%";
+}
+
+function changeTemp(amount) {
+	
+	mech.status.temp += amount;
+	
+	var tempMeter = document.getElementById('meter_Temp');
+	tempMeter.value = mech.status.temp;
+	tempMeter.innerText = mech.status.fuel + "C";
+	
 }
 
 function attack(direction) {
@@ -274,6 +345,8 @@ function attack(direction) {
 			break;
 		default: console.log("Tried to fire in an invalid direction");
 	}
+	
+	changeTemp(15);
 	
 	tick();
 }
