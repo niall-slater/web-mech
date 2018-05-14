@@ -564,7 +564,7 @@ function attack(direction) {
 		default: console.log("Tried to fire in an invalid direction");
 	}
 	
-	changeTemp(15);
+	changeTemp(30);
 	
 	endTurn();
 }
