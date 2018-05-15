@@ -763,7 +763,7 @@ function consoleDie() {
 	gameConsole.className += " consoleDeath";
 	
 	setTimeout(function() {
-		gameConsole.innerHTML = "<h1 span style='color:#0f0; text-align:center;'>GAME OVER</h1>";
+		gameConsole.innerHTML = "<h1 span style='color:#0f0; text-align:center;'>GAME OVER</h1><h3 span style='color:#0f0; text-align:center;'>Refresh page to play again.</h3>";
 		gameConsole.className = "console consoleDead";
 	}, 1500);
 }
