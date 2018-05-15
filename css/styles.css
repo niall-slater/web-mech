@@ -1,7 +1,6 @@
 body {
 	font-family: monospace;
-	background-color: #111;
-	background: linear-gradient(to bottom right, #222, #111) fixed;
+	background-color: #222;
 	color: #3f3;
 	display: flex;
 	flex-flow: row wrap;
@@ -107,7 +106,13 @@ button {
 	color: #3f3;
 	width: 50%;
 	border: 2px outset #6a6a6a;
+    transition: 1s ease all;
 }
+
+button:active {
+    border: 2px inset #6a6a6a;
+}
+
 
 .pad {
 	width: 80%;
