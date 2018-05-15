@@ -67,15 +67,15 @@ var mech = {
 	},
 	
 	die: function() {
-		map[this.position.x][this.position.y] = tileDestroyed();
+        destroyTile(this.position.x, this.position.y);
 		if (this.position.x > 0)
-			map[this.position.x-1][this.position.y] = tileDestroyed();
+			destroyTile(this.position.x - 1, this.position.y);
 		if (this.position.x < mapSize-1)
-			map[this.position.x+1][this.position.y] = tileDestroyed();
+			destroyTile(this.position.x + 1, this.position.y);
 		if (this.position.y > 0)
-			map[this.position.x][this.position.y-1] = tileDestroyed();
+			destroyTile(this.position.x, this.position.y - 1);
 		if (this.position.y < mapSize-1)
-			map[this.position.x][this.position.y+1] = tileDestroyed();
+			destroyTile(this.position.x, this.position.y + 1);
 		this.status.alive = false;
 		printToConsole("##REACTOR OVERLOAD##<br />##REACTOR OVERLOAD##<br />##REACTOR OVERLOAD##<br />", true, true);
 		setTimeout(consoleDie, 2000);
@@ -110,15 +110,15 @@ var enemy = {
 	},
 	
 	die: function() {
-		map[this.position.x][this.position.y] = tileDestroyed();
+        destroyTile(this.position.x, this.position.y);
 		if (this.position.x > 0)
-			map[this.position.x-1][this.position.y] = tileDestroyed();
+			destroyTile(this.position.x - 1, this.position.y);
 		if (this.position.x < mapSize-1)
-			map[this.position.x+1][this.position.y] = tileDestroyed();
+			destroyTile(this.position.x + 1, this.position.y);
 		if (this.position.y > 0)
-			map[this.position.x][this.position.y-1] = tileDestroyed();
+			destroyTile(this.position.x, this.position.y - 1);
 		if (this.position.y < mapSize-1)
-			map[this.position.x][this.position.y+1] = tileDestroyed();
+			destroyTile(this.position.x, this.position.y + 1);
 		this.status.alive = false;
 	}
 	
@@ -484,7 +484,7 @@ function enemyAttack(direction) {
 				mech.hit(enemy.status.attack);
 			}
 			for (var i = 1; i < enemy.position.y + 1; i++) {
-				map[enemy.position.x][enemy.position.y - i] = tileDestroyed();
+                destroyTile(enemy.position.x, enemy.position.y - i);
 			}
 			break;
 		case 'e':
@@ -493,7 +493,7 @@ function enemyAttack(direction) {
 				mech.hit(enemy.status.attack);
 			}
 			for (var i = 1; i < mapSize - enemy.position.x; i++) {
-				map[enemy.position.x + i][enemy.position.y] = tileDestroyed();
+                destroyTile(enemy.position.x + i, enemy.position.y);
 			}
 			break;
 		case 's':
@@ -502,7 +502,7 @@ function enemyAttack(direction) {
 				mech.hit(enemy.status.attack);
 			}
 			for (var i = 1; i < mapSize - enemy.position.y; i++) {
-				map[enemy.position.x][enemy.position.y + i] = tileDestroyed();
+                destroyTile(enemy.position.x, enemy.position.y + i);
 			}
 			break;
 		case 'w':
@@ -511,7 +511,7 @@ function enemyAttack(direction) {
 				mech.hit(enemy.status.attack);
 			}
 			for (var i = 1; i < enemy.position.x + 1; i++) {
-				map[enemy.position.x - i][enemy.position.y] = tileDestroyed();
+                destroyTile(enemy.position.x - i, enemy.position.y);
 			}
 			break;
 		default: console.log("Enemy tried to fire in an invalid direction");
@@ -572,7 +572,7 @@ function attack(direction) {
 				enemy.hit(mech.status.attack);
 			}
 			for (var i = 1; i < mech.position.y + 1; i++) {
-				map[mech.position.x][mech.position.y - i] = tileDestroyed();
+                destroyTile(mech.position.x, mech.position.y - i);
 			}
 			break;
 		case 'e':
@@ -582,7 +582,7 @@ function attack(direction) {
 				enemy.hit(mech.status.attack);
 			}
 			for (var i = 1; i < mapSize - mech.position.x; i++) {
-				map[mech.position.x + i][mech.position.y] = tileDestroyed();
+				destroyTile(mech.position.x + i, mech.position.y);
 			}
 			break;
 		case 's':
@@ -592,7 +592,7 @@ function attack(direction) {
 				enemy.hit(mech.status.attack);
 			}
 			for (var i = 1; i < mapSize - mech.position.y; i++) {
-				map[mech.position.x][mech.position.y + i] = tileDestroyed();
+                destroyTile(mech.position.x, mech.position.y + i);
 			}
 			break;
 		case 'w':
@@ -602,7 +602,7 @@ function attack(direction) {
 				enemy.hit(mech.status.attack);
 			}
 			for (var i = 1; i < mech.position.x + 1; i++) {
-				map[mech.position.x - i][mech.position.y] = tileDestroyed();
+                destroyTile(mech.position.x - i, mech.position.y);
 			}
 			break;
 		default: console.log("Tried to fire in an invalid direction");
@@ -647,6 +647,14 @@ function consoleDie() {
 		gameConsole.innerHTML = "<h1 span style='color:#0f0; text-align:center;'>GAME OVER</h1>";
 		gameConsole.className = "console consoleDead";
 	}, 1500);
+}
+
+function destroyTile(x, y) {
+    map[x][y] = tileDestroyed();
+}
+
+function buildingDestroyed() {
+    
 }
 
 
