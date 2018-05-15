@@ -42,8 +42,8 @@ for (var x = 0; x < mapSize; x++) {
 
 //Game variables
 
-var v_tempMax = 65; //Temperature at which reactor takes damage
-var v_tempMin = 3;
+var v_tempMax = 65;     //Temperature at which reactor takes damage
+var v_buildingsLeft = 0;    //Number of buildings left standing
 
 var mech = {
 	
@@ -235,10 +235,13 @@ function buildMap() {
 		let buildingX = 4 + Math.floor(Math.random() * mapSize - 4);
 		let buildingY = 4 + Math.floor(Math.random() * mapSize - 4);
         
-        if (result[buildingX][buildingY].type === mapID_building)
-            buildingX++;
+        while (result[buildingX][buildingY].type === mapID_building) {
+            buildingX = 4 + Math.floor(Math.random() * mapSize - 4);
+            buildingY = 4 + Math.floor(Math.random() * mapSize - 4);
+        }
         
         result[buildingX][buildingY] = tileBuilding();
+        v_buildingsLeft++;
 	}
     
 	
@@ -354,6 +357,15 @@ function updateMap() {
 	}
 }
 
+function updateGameStatus() {
+    
+    if (v_buildingsLeft <= 0) {
+        printToConsole("ALL BUILDINGS DESTROYED", false, false);
+        printToConsole("MISSION FAILED", false, true);
+		setTimeout(consoleDie, 2000);
+    }
+}
+
 function skipTurn() {
 	
 	if (!mech.status.alive) {
@@ -368,6 +380,7 @@ function endTurn() {
 	enemyTurn();
 	updateMechStatus();
 	updateMap();
+    updateGameStatus();
 }
 
 function movePlayer(direction) {
@@ -650,11 +663,17 @@ function consoleDie() {
 }
 
 function destroyTile(x, y) {
+    
+    if (map[x][y].type === mapID_building) {
+        buildingDestroyed();
+    }
+    
     map[x][y] = tileDestroyed();
 }
 
 function buildingDestroyed() {
-    
+    v_buildingsLeft--;
+    printToConsole("BUILDING LOST", true, false);
 }
 
 
