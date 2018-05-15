@@ -71,7 +71,7 @@ var mech = {
 	},
 	
 	hit: function (damage) {
-		printToConsole("OW", true, true);
+		
 	},
 	
 	die: function() {
@@ -107,7 +107,8 @@ var enemy = {
 	
     brain: {
         moveTarget: undefined,
-        attackTarget: undefined
+        attackTarget: undefined,
+		readyToFire: false
     },
 	
 	hit: function (damage) {
@@ -511,28 +512,30 @@ function enemyTurn() {
 				if (enemy.brain.attackTarget === undefined)
 					return;
                 enemy.brain.moveTarget = findVantagePoint(enemy.position, enemy.brain.attackTarget);
-            } else {
-			//Else, move and attack!
+            } else if (!enemy.brain.readyToFire) {
+			//Move into position and get ready to fire
 				moveEnemyTowardsVantagePoint(enemy.brain.moveTarget);
-				
                 if (enemy.position.x === enemy.brain.moveTarget.x &&
 					enemy.position.y === enemy.brain.moveTarget.y) {
-					
-                    let fireVector = 'n';
-					
-					if (enemy.brain.attackTarget.y < enemy.position.y)
-						fireVector = 'n';
-					if (enemy.brain.attackTarget.y > enemy.position.y)
-						fireVector = 's';
-					if (enemy.brain.attackTarget.x < enemy.position.x)
-						fireVector = 'w';
-					if (enemy.brain.attackTarget.x > enemy.position.x)
-						fireVector = 'e';
-					
-					enemyAttack(fireVector);
-					enemy.brain.attackTarget = undefined;
-					enemy.brain.moveTarget = undefined;
-                }
+					enemy.brain.readyToFire = true;
+					printToConsole("Enemy beam charging.", false, true);
+				}
+			} else {
+			//Fire!
+				let fireVector = 'n';
+
+				if (enemy.brain.attackTarget.y < enemy.position.y)
+					fireVector = 'n';
+				if (enemy.brain.attackTarget.y > enemy.position.y)
+					fireVector = 's';
+				if (enemy.brain.attackTarget.x < enemy.position.x)
+					fireVector = 'w';
+				if (enemy.brain.attackTarget.x > enemy.position.x)
+					fireVector = 'e';
+
+				enemyAttack(fireVector);
+				enemy.brain.attackTarget = undefined;
+				enemy.brain.moveTarget = undefined;
 			}
 			break;
         }
@@ -626,6 +629,8 @@ function enemyAttack(direction) {
 			break;
 		default: console.log("Enemy tried to fire in an invalid direction");
 	}
+	
+	enemy.brain.readyToFire = false;
 	
 	updateMap();
 }
