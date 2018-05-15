@@ -7,6 +7,20 @@ var color_water = '#003baa';
 var color_destroyed = '#652300';
 var color_mech = '#fff';
 var color_enemy = '#f00';
+var color_building = '#e3e3e3';
+
+//Map is a 10x10 table element
+//Declare keys for items
+var mapSize = 10;
+var mapID_field = "-";
+var mapID_woods = "◭";
+var mapID_mountains = "△";
+var mapID_water = "~";
+var mapID_destroyed = "#";
+var mapID_mech = "M";
+var mapID_enemy = "X";
+var mapID_building = "▤";
+var mapElement = document.getElementById("map");
 
 //Game variables
 
@@ -92,19 +106,6 @@ var enemy = {
 	
 }
 
-//Map is a 10x10 table element
-//Declare keys for items
-var mapSize = 10;
-var mapID_field = "-";
-var mapID_woods = ";";
-var mapID_mountains = "^";
-var mapID_water = "~";
-var mapID_destroyed = "#";
-var mapID_mech = "M";
-var mapID_enemy = "X";
-var mapElement = document.getElementById("map");
-
-
 /* TILE DATA */
 
 function tileField() {
@@ -147,6 +148,16 @@ function tileWoods() {
 	return tile;
 }
 
+function tileBuilding() {
+	let tile = {
+		type: mapID_building,
+		temp: 40,
+		movementCost: 8,
+		defense: 16
+	};
+	return tile;
+}
+
 function tileDestroyed() {
 	let tile = {
 		type: mapID_destroyed,
@@ -168,6 +179,7 @@ function buildMap() {
 	let num_woods = 2;
 	let num_mountains = 1;
 	let num_rivers = 1;
+	let num_buildings = 4;
 	
 	for (var y = 0; y < mapSize; y++) {
 		
@@ -198,6 +210,19 @@ function buildMap() {
 			result[x][riverY] = tileRiver();
 		}
 	}
+    
+    //Add buildings
+	
+	for (var i = 0; i < num_buildings; i++) {
+		let buildingX = 4 + Math.floor(Math.random() * mapSize - 4);
+		let buildingY = 4 + Math.floor(Math.random() * mapSize - 4);
+        
+        if (result[buildingX][buildingY].type === mapID_building)
+            buildingX++;
+        
+        result[buildingX][buildingY] = tileBuilding();
+	}
+    
 	
 	//Add enemy
 	
@@ -303,6 +328,7 @@ function updateMap() {
 				case mapID_woods: 		cells[x].style.color = color_woods; break;
 				case mapID_mountains: 	cells[x].style.color = color_mountains; break;
 				case mapID_water:  		cells[x].style.color = color_water; break;
+				case mapID_building:  	cells[x].style.color = color_building; break;
 				case mapID_destroyed:  	cells[x].style.color = color_destroyed; cells[x].style.textShadow = '0px 0px 20px ' + color_destroyed; break;
 			}
 			
