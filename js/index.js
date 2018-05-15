@@ -22,6 +22,24 @@ var mapID_enemy = "X";
 var mapID_building = "▤";
 var mapElement = document.getElementById("map");
 
+//Build the map table before anything else
+for (var x = 0; x < mapSize; x++) {
+    let mapTable = document.getElementById("map");
+    
+    let rowNode = document.createElement('TR');
+    
+    for (var y = 0; y < mapSize; y++) {
+        
+        let cellNode = document.createElement('TD');
+        cellNode.innerText = '0';
+        rowNode.appendChild(cellNode);
+        
+    }
+    
+    mapTable.appendChild(rowNode);
+    
+}
+
 //Game variables
 
 var v_tempMax = 65; //Temperature at which reactor takes damage
