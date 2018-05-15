@@ -450,6 +450,10 @@ function enemyTurn() {
 	
 	//choose direction
 	
+	if (!enemy.status.alive) {
+		return;
+	}
+	
 	var direction;
 	
     let behaviours = {
