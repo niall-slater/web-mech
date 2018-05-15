@@ -22,6 +22,10 @@ var mapID_enemy = "X";
 var mapID_building = "▤";
 var mapElement = document.getElementById("map");
 
+let versionNumber = 0.01;
+
+document.getElementById('version').innerText = versionNumber;
+
 //Build the map table before anything else
 for (var x = 0; x < mapSize; x++) {
     let mapTable = document.getElementById("map");
@@ -48,7 +52,7 @@ var v_buildingsLeft = 0;    //Number of buildings left standing
 var mech = {
 	
 	//Values to keep track of health, dangers and resources
-	status : {
+	status: {
 		reactor: 100,
 		temp: 35,
 		fuel: 100,
@@ -56,7 +60,7 @@ var mech = {
 		defense: 20,
 		alive: true
 	},
-	
+    
 	position : {
 		x: 2,
 		y: 2
@@ -96,6 +100,11 @@ var enemy = {
 		x: 5,
 		y: 5
 	},
+	
+    brain: {
+        moveTarget: undefined,
+        attackTarget: undefined
+    },
 	
 	hit: function (damage) {
 		let damageResult = damage - map[this.position.x][this.position.y].defense;
@@ -438,39 +447,74 @@ function enemyTurn() {
 	
 	var direction;
 	
-	var selector = Math.random();
-	
-	if (selector < .25) {
-		direction = 'n';
-	} else if (selector < .5) {
-		direction = 'e';
-	} else if (selector < .75) {
-		direction = 's';
-	} else {
-		direction = 'w';
-	}
-	
-	if (mech.position.x < enemy.position.x && direction === 'e') {
-		direction = 'w';
-	}
-	if (mech.position.y < enemy.position.y && direction === 's') {
-		direction = 'n';
-	}
-	if (mech.position.y > enemy.position.y && direction === 'n') {
-		direction = 's';
-	}
-	if (mech.position.x > enemy.position.x && direction === 'w') {
-		direction = 'e';
-	}
-	
-	var moving = Math.random();
-	
-	if (moving > 0.1) {
-		moveEnemy(direction);
-	} else {
-		enemyAttack(direction);
-	}
-	
+    let behaviours = {
+        'wander': 0,
+        'idle': 1,
+        'destroy': 2,
+        'hunt': 3   
+    };
+    
+    let currentBehaviour = behaviours.destroy;
+    
+    //Wander behaviour
+    
+    switch (currentBehaviour) {
+        case behaviours.wander: {
+        
+            var selector = Math.random();
+
+            if (selector < .25) {
+                direction = 'n';
+            } else if (selector < .5) {
+                direction = 'e';
+            } else if (selector < .75) {
+                direction = 's';
+            } else {
+                direction = 'w';
+            }
+
+            if (mech.position.x < enemy.position.x && direction === 'e') {
+                direction = 'w';
+            }
+            if (mech.position.y < enemy.position.y && direction === 's') {
+                direction = 'n';
+            }
+            if (mech.position.y > enemy.position.y && direction === 'n') {
+                direction = 's';
+            }
+            if (mech.position.x > enemy.position.x && direction === 'w') {
+                direction = 'e';
+            }
+
+            var moving = Math.random();
+
+            if (moving > 0.1) {
+                moveEnemy(direction);
+            } else {
+                enemyAttack(direction);
+            }
+            break;
+        }
+        case behaviours.idle: {
+            break;
+        }
+        case behaviours.destroy: {
+            if (enemy.brain.attackTarget === undefined) {
+                enemy.brain.attackTarget = getRandomTileOfType(mapID_building);
+                enemy.brain.moveTarget = findVantagePoint(enemy.position, enemy.brain.attackTarget);
+                moveEnemyTowardsVantagePoint(enemy.brain.moveTarget);
+                if (enemy.position === enemy.brain.moveTarget) {
+                    enemyAttack('n'); //TODO: make them attack the right way!
+                }
+            }
+        }
+        case behaviours.hunt: {
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
 
 function moveEnemy(direction) {
@@ -482,6 +526,31 @@ function moveEnemy(direction) {
 		case 'w': if (enemy.position.x > 0) {enemy.position.x--;} break;
 	}
 }
+
+function moveEnemyTowardsVantagePoint(cellReference) {
+	
+    //Vantage point should always be on the same X or Y as the enemy
+    //so we don't need to do any pathfinding. Just move towards the
+    //right cell.
+    
+    if (cellReference.x === enemy.position.x) {
+        if (enemy.position.y > cellReference.y) {
+            enemy.position.y--;
+        } else {
+            enemy.position.y++;
+        }
+    } else if (cellReference.y === enemy.position.y) {
+        if (enemy.position.x > cellReference.x) {
+            enemy.position.x--;
+        } else {
+            enemy.position.x++;
+        }
+    } else {
+        console.log("Problem: enemy vantage point is not on same X or Y as enemy");
+    }
+    
+}
+
 
 function enemyAttack(direction) {
 	
@@ -676,6 +745,50 @@ function buildingDestroyed() {
     printToConsole("BUILDING LOST", true, false);
 }
 
+function findVantagePoint(currentPos, targetPos) {
+    
+    //Return the closest cell reference that exists on the same X or Y as the target
+    //This is to find a cell from which the mover can fire a beam on the target
+    
+    let result = {x:5, y:5};
+    
+    var difX = Math.abs(targetPos.x - currentPos.x);
+    var difY = Math.abs(targetPos.y - currentPos.y);
+    
+    if (difX < difY) {
+        result.x = targetPos.x;
+        result.y = currentPos.y;
+    } else {
+        result.x = currentPos.x;
+        result.y = targetPos.y;
+    }
+    
+    return result;
+    
+}
+
+function getRandomTileOfType(seekType) {
+    
+    //Return an {x,y} reference for a random tile of the specified type
+    let listOfChoices = [];
+    
+    for (var x = 0; x < mapSize; x++) {
+        for (var y = 0; y < mapSize; y++) {
+            
+            let tileRef = {x:0,y:0};
+            
+            if (map[x][y].type === seekType) {
+                tileRef.x = x;
+                tileRef.y = y;
+                listOfChoices.push(tileRef);
+            }
+        }
+    }
+    
+    let selector = Math.floor(Math.random() * listOfChoices.length);
+    
+    return listOfChoices[selector];
+}
 
 //Start the game
 var map = buildMap();
