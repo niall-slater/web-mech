@@ -378,6 +378,11 @@ function updateGameStatus() {
         printToConsole("MISSION FAILED", false, true);
 		setTimeout(consoleDie, 2000);
     }
+	
+	if (!enemy.status.alive) {
+        printToConsole("MISSION SUCCESS", true, false);
+        printToConsole("Refresh page to play again", true, false);
+	}
 }
 
 function skipTurn() {
