@@ -70,6 +70,10 @@ var mech = {
 		depleteReactor(amount);
 	},
 	
+	hit: function (damage) {
+		printToConsole("OW", true, true);
+	},
+	
 	die: function() {
         destroyTile(this.position.x, this.position.y);
 		if (this.position.x > 0)
@@ -499,14 +503,38 @@ function enemyTurn() {
             break;
         }
         case behaviours.destroy: {
+			console.log(enemy.brain);
+			
+			//If we don't have a target in mind, get one
             if (enemy.brain.attackTarget === undefined) {
                 enemy.brain.attackTarget = getRandomTileOfType(mapID_building);
+				if (enemy.brain.attackTarget === undefined)
+					return;
                 enemy.brain.moveTarget = findVantagePoint(enemy.position, enemy.brain.attackTarget);
-                moveEnemyTowardsVantagePoint(enemy.brain.moveTarget);
-                if (enemy.position === enemy.brain.moveTarget) {
-                    enemyAttack('n'); //TODO: make them attack the right way!
+            } else {
+			//Else, move and attack!
+				moveEnemyTowardsVantagePoint(enemy.brain.moveTarget);
+				
+                if (enemy.position.x === enemy.brain.moveTarget.x &&
+					enemy.position.y === enemy.brain.moveTarget.y) {
+					
+                    let fireVector = 'n';
+					
+					if (enemy.brain.attackTarget.y < enemy.position.y)
+						fireVector = 'n';
+					if (enemy.brain.attackTarget.y > enemy.position.y)
+						fireVector = 's';
+					if (enemy.brain.attackTarget.x < enemy.position.x)
+						fireVector = 'w';
+					if (enemy.brain.attackTarget.x > enemy.position.x)
+						fireVector = 'e';
+					
+					enemyAttack(fireVector);
+					enemy.brain.attackTarget = undefined;
+					enemy.brain.moveTarget = undefined;
                 }
-            }
+			}
+			break;
         }
         case behaviours.hunt: {
             break;
@@ -536,13 +564,13 @@ function moveEnemyTowardsVantagePoint(cellReference) {
     if (cellReference.x === enemy.position.x) {
         if (enemy.position.y > cellReference.y) {
             enemy.position.y--;
-        } else {
+        } else if (enemy.position.y < cellReference.y) {
             enemy.position.y++;
         }
     } else if (cellReference.y === enemy.position.y) {
         if (enemy.position.x > cellReference.x) {
             enemy.position.x--;
-        } else {
+        } else if (enemy.position.x < cellReference.x) {
             enemy.position.x++;
         }
     } else {
@@ -742,7 +770,11 @@ function destroyTile(x, y) {
 
 function buildingDestroyed() {
     v_buildingsLeft--;
-    printToConsole("BUILDING LOST", true, false);
+	let remainText = " - " + v_buildingsLeft + " REMAINING";
+	if (v_buildingsLeft < 1) {
+		remainText = "";
+	}
+    printToConsole("BUILDING LOST" + remainText, true, false);
 }
 
 function findVantagePoint(currentPos, targetPos) {
@@ -786,6 +818,10 @@ function getRandomTileOfType(seekType) {
     }
     
     let selector = Math.floor(Math.random() * listOfChoices.length);
+	
+	if (listOfChoices.length === 0) {
+		console.log("No tiles found of type " + seekType);
+	}
     
     return listOfChoices[selector];
 }
