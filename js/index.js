@@ -46,7 +46,7 @@ for (var x = 0; x < mapSize; x++) {
 
 //Game variables
 
-var v_tempMax = 65;     //Temperature at which reactor takes damage
+var v_tempMax = 65;         //Temperature at which reactor takes damage
 var v_buildingsLeft = 0;    //Number of buildings left standing
 
 var mech = {
@@ -71,11 +71,10 @@ var mech = {
 	},
 	
 	hit: function (damage) {
-		
+        
 	},
 	
 	die: function() {
-        destroyTile(this.position.x, this.position.y);
 		if (this.position.x > 0)
 			destroyTile(this.position.x - 1, this.position.y);
 		if (this.position.x < mapSize-1)
@@ -108,7 +107,8 @@ var enemy = {
     brain: {
         moveTarget: undefined,
         attackTarget: undefined,
-		readyToFire: false
+		readyToFire: false,
+        usingBeam: false
     },
 	
 	hit: function (damage) {
@@ -124,7 +124,6 @@ var enemy = {
 	},
 	
 	die: function() {
-        destroyTile(this.position.x, this.position.y);
 		if (this.position.x > 0)
 			destroyTile(this.position.x - 1, this.position.y);
 		if (this.position.x < mapSize-1)
@@ -465,10 +464,11 @@ function enemyTurn() {
         'wander': 0,
         'idle': 1,
         'destroy': 2,
-        'hunt': 3   
+        'hunt': 3,
+        'destroyMelee': 4
     };
     
-    let currentBehaviour = behaviours.destroy;
+    let currentBehaviour = behaviours.destroyMelee;
     
     //Wander behaviour
     
@@ -513,14 +513,17 @@ function enemyTurn() {
             break;
         }
         case behaviours.destroy: {
-			console.log(enemy.brain);
+			//console.log(enemy.brain);
 			
 			//If we don't have a target in mind, get one
             if (enemy.brain.attackTarget === undefined) {
                 enemy.brain.attackTarget = getRandomTileOfType(mapID_building);
+                
 				if (enemy.brain.attackTarget === undefined)
 					return;
+                
                 enemy.brain.moveTarget = findVantagePoint(enemy.position, enemy.brain.attackTarget);
+                
             } else if (!enemy.brain.readyToFire) {
 			//Move into position and get ready to fire
 				moveEnemyTowardsVantagePoint(enemy.brain.moveTarget);
@@ -551,6 +554,40 @@ function enemyTurn() {
         case behaviours.hunt: {
             break;
         }
+        case behaviours.destroyMelee: {
+            
+			//If we don't have a target in mind, get one
+            if (enemy.brain.attackTarget === undefined) {
+                enemy.brain.attackTarget = getRandomTileOfType(mapID_building);
+                
+				if (enemy.brain.attackTarget === undefined)
+					return;
+                
+                enemy.brain.moveTarget = getRandomTileAroundPoint(enemy.brain.attackTarget);
+                
+            } else if (!vectorsEqual(enemy.position, enemy.brain.moveTarget)) {
+                //Not yet reached target
+                moveEnemyTowardsPoint(enemy.brain.moveTarget);
+            }
+            else if (vectorsEqual(enemy.position, enemy.brain.moveTarget) && !enemy.brain.readyToFire) {
+                //Reached the target
+                enemy.brain.readyToFire = true;
+            } else {
+                //Attack!
+                
+				let fireVector = 'n';
+                
+				if (enemy.brain.attackTarget.y < enemy.position.y)
+					fireVector = 'n';
+				if (enemy.brain.attackTarget.y > enemy.position.y)
+					fireVector = 's';
+				if (enemy.brain.attackTarget.x < enemy.position.x)
+					fireVector = 'w';
+				if (enemy.brain.attackTarget.x > enemy.position.x)
+					fireVector = 'e';
+            }
+            
+        }
         default: {
             break;
         }
@@ -567,8 +604,45 @@ function moveEnemy(direction) {
 	}
 }
 
+function findVantagePoint(currentPos, targetPos) {
+    
+    //Return the closest cell reference that exists on the same X or Y as the target
+    //This is to find a cell from which the mover can fire a beam on the target
+    
+    let result = {x:5, y:5};
+    
+    var difX = Math.abs(targetPos.x - currentPos.x);
+    var difY = Math.abs(targetPos.y - currentPos.y);
+    
+    if (difX < difY) {
+        result.x = targetPos.x;
+        result.y = currentPos.y;
+    } else {
+        result.x = currentPos.x;
+        result.y = targetPos.y;
+    }
+    
+    return result;
+    
+}
+
+function moveEnemyTowardsPoint(cellReference) {
+	
+    //TODO: make this much better - A*?
+    
+    if (cellReference.x < enemy.position.x) {
+        enemy.position.x--;
+    } else if (cellReference.y < enemy.position.y) {
+        enemy.position.y--;
+    } else {
+        console.log("Problem in moveEnemyTowardsPoint");
+    }
+    
+}
 function moveEnemyTowardsVantagePoint(cellReference) {
 	
+    //This is for when enemy is using the beam
+    
     //Vantage point should always be on the same X or Y as the enemy
     //so we don't need to do any pathfinding. Just move towards the
     //right cell.
@@ -596,50 +670,56 @@ function enemyAttack(direction) {
 	
 	//Check mech position - if position is in path of beam, damage it
 	//Also destroy terrain in path of beam
+    
+    if (enemy.brain.usingBeam) {
+        printToConsole('Enemy beam detected', false, true);
 	
-	printToConsole('Enemy beam detected', false, true);
+        switch (direction) {
+            case 'n':
+                for (var i = 1; i < enemy.position.y + 1; i++) {
+                    destroyTile(enemy.position.x, enemy.position.y - i);
+                }
+                break;
+            case 'e':
+                for (var i = 1; i < mapSize - enemy.position.x; i++) {
+                    destroyTile(enemy.position.x + i, enemy.position.y);
+                }
+                break;
+            case 's':
+                for (var i = 1; i < mapSize - enemy.position.y; i++) {
+                    destroyTile(enemy.position.x, enemy.position.y + i);
+                }
+                break;
+            case 'w':
+                for (var i = 1; i < enemy.position.x + 1; i++) {
+                    destroyTile(enemy.position.x - i, enemy.position.y);
+                }
+                break;
+            default: console.log("Enemy tried to fire in an invalid direction");
+        }
+
+        enemy.brain.readyToFire = false;
+
+    } else {
+        //Melee attack
+        
+        switch (direction) {
+            case 'n':
+                destroyTile(enemy.position.x, enemy.position.y - 1);
+                break;
+            case 'e':
+                destroyTile(enemy.position.x + 1, enemy.position.y);
+                break;
+            case 's':
+                destroyTile(enemy.position.x, enemy.position.y + 1);
+                break;
+            case 'w':
+                destroyTile(enemy.position.x - 1, enemy.position.y);
+                break;
+            default: console.log("Enemy tried to fire in an invalid direction");
+        }
+    }
 	
-	switch (direction) {
-		case 'n':
-			if (mech.position.x === enemy.position.x && mech.position.y < enemy.position.y)
-			{
-				mech.hit(enemy.status.attack);
-			}
-			for (var i = 1; i < enemy.position.y + 1; i++) {
-                destroyTile(enemy.position.x, enemy.position.y - i);
-			}
-			break;
-		case 'e':
-			if (mech.position.y === enemy.position.y && mech.position.x > enemy.position.x)
-			{
-				mech.hit(enemy.status.attack);
-			}
-			for (var i = 1; i < mapSize - enemy.position.x; i++) {
-                destroyTile(enemy.position.x + i, enemy.position.y);
-			}
-			break;
-		case 's':
-			if (enemy.position.x === mech.position.x && mech.position.y > enemy.position.y)
-			{
-				mech.hit(enemy.status.attack);
-			}
-			for (var i = 1; i < mapSize - enemy.position.y; i++) {
-                destroyTile(enemy.position.x, enemy.position.y + i);
-			}
-			break;
-		case 'w':
-			if (enemy.position.y === mech.position.y && mech.position.x < enemy.position.x)
-			{
-				mech.hit(enemy.status.attack);
-			}
-			for (var i = 1; i < enemy.position.x + 1; i++) {
-                destroyTile(enemy.position.x - i, enemy.position.y);
-			}
-			break;
-		default: console.log("Enemy tried to fire in an invalid direction");
-	}
-	
-	enemy.brain.readyToFire = false;
 	
 	updateMap();
 }
@@ -691,40 +771,24 @@ function attack(direction) {
 	switch (direction) {
 		case 'n':
 			printToConsole('Main beam fired - bearing North');
-			if (enemy.position.x === mech.position.x && enemy.position.y < mech.position.y)
-			{
-				enemy.hit(mech.status.attack);
-			}
 			for (var i = 1; i < mech.position.y + 1; i++) {
                 destroyTile(mech.position.x, mech.position.y - i);
 			}
 			break;
 		case 'e':
 			printToConsole('Main beam fired - bearing East');
-			if (enemy.position.y === mech.position.y && enemy.position.x > mech.position.x)
-			{
-				enemy.hit(mech.status.attack);
-			}
 			for (var i = 1; i < mapSize - mech.position.x; i++) {
 				destroyTile(mech.position.x + i, mech.position.y);
 			}
 			break;
 		case 's':
 			printToConsole('Main beam fired - bearing South');
-			if (enemy.position.x === mech.position.x && enemy.position.y > mech.position.y)
-			{
-				enemy.hit(mech.status.attack);
-			}
 			for (var i = 1; i < mapSize - mech.position.y; i++) {
                 destroyTile(mech.position.x, mech.position.y + i);
 			}
 			break;
 		case 'w':
 			printToConsole('Main beam fired - bearing West');
-			if (enemy.position.y === mech.position.y && enemy.position.x < mech.position.x)
-			{
-				enemy.hit(mech.status.attack);
-			}
 			for (var i = 1; i < mech.position.x + 1; i++) {
                 destroyTile(mech.position.x - i, mech.position.y);
 			}
@@ -779,6 +843,15 @@ function destroyTile(x, y) {
         buildingDestroyed();
     }
     
+    if (mech.position.x == x && mech.position.y == y) {
+        mech.hit(enemy.status.attack);
+    }
+    
+    if (enemy.position.x == x && enemy.position.y == y) {
+        enemy.hit(mech.status.attack);
+    }
+    
+    
     map[x][y] = tileDestroyed();
 }
 
@@ -789,28 +862,6 @@ function buildingDestroyed() {
 		remainText = "";
 	}
     printToConsole("BUILDING LOST" + remainText, true, false);
-}
-
-function findVantagePoint(currentPos, targetPos) {
-    
-    //Return the closest cell reference that exists on the same X or Y as the target
-    //This is to find a cell from which the mover can fire a beam on the target
-    
-    let result = {x:5, y:5};
-    
-    var difX = Math.abs(targetPos.x - currentPos.x);
-    var difY = Math.abs(targetPos.y - currentPos.y);
-    
-    if (difX < difY) {
-        result.x = targetPos.x;
-        result.y = currentPos.y;
-    } else {
-        result.x = currentPos.x;
-        result.y = targetPos.y;
-    }
-    
-    return result;
-    
 }
 
 function getRandomTileOfType(seekType) {
@@ -838,6 +889,46 @@ function getRandomTileOfType(seekType) {
 	}
     
     return listOfChoices[selector];
+}
+
+function getRandomTileAroundPoint(point) {
+    
+    //Return an {x,y} reference for a random tile orthogonally adjacent to given tile
+    let listOfChoices = [];
+    
+    if (point.x > 0) {
+        let tile = {x: point.x-1, y: point.y};
+        listOfChoices.push(tile);
+    }
+    if (point.x < mapSize) {
+        let tile = {x: point.x+1, y: point.y};
+        listOfChoices.push(tile);
+    }
+    if (point.y > 0) {
+        let tile = {x: point.x, y: point.y-1};
+        listOfChoices.push(tile);
+    }
+    if (point.y < mapSize) {
+        let tile = {x: point.x, y: point.y+1};
+        listOfChoices.push(tile);
+    }
+    
+    let selector = Math.floor(Math.random() * listOfChoices.length);
+    
+    console.log(listOfChoices[selector]);
+    
+    return listOfChoices[selector];
+}
+
+//Helper functions
+
+function vectorsEqual(a, b) {
+    
+    if (a.x === b.x && a.y === b.y) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 //Start the game
