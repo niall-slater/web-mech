@@ -585,6 +585,10 @@ function enemyTurn() {
 					fireVector = 'w';
 				if (enemy.brain.attackTarget.x > enemy.position.x)
 					fireVector = 'e';
+                
+                enemyAttack(fireVector);
+				enemy.brain.attackTarget = undefined;
+				enemy.brain.moveTarget = undefined;
             }
             
         }
@@ -636,6 +640,7 @@ function moveEnemyTowardsPoint(cellReference) {
         enemy.position.y--;
     } else {
         console.log("Problem in moveEnemyTowardsPoint");
+        console.log("The problem is probably because this function SUCKS and you should fix it or implement A* as soon as possible");
     }
     
 }
@@ -695,7 +700,7 @@ function enemyAttack(direction) {
                     destroyTile(enemy.position.x - i, enemy.position.y);
                 }
                 break;
-            default: console.log("Enemy tried to fire in an invalid direction");
+            default: console.log("Enemy tried to fire in an invalid direction"); break;
         }
 
         enemy.brain.readyToFire = false;
@@ -716,8 +721,10 @@ function enemyAttack(direction) {
             case 'w':
                 destroyTile(enemy.position.x - 1, enemy.position.y);
                 break;
-            default: console.log("Enemy tried to fire in an invalid direction");
+            default: console.log("Enemy tried to fire in an invalid direction"); break;
         }
+                
+        enemy.brain.readyToFire = false;
     }
 	
 	
@@ -914,8 +921,6 @@ function getRandomTileAroundPoint(point) {
     }
     
     let selector = Math.floor(Math.random() * listOfChoices.length);
-    
-    console.log(listOfChoices[selector]);
     
     return listOfChoices[selector];
 }
